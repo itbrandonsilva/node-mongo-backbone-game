@@ -3,6 +3,7 @@
 var core	= require("../../core");
 
 var ex = {};
+ex.user = require("./user.js");
 
 ex.indexGet = function(req, res) {
 	res.render('index', {title: 'Express'});
@@ -10,19 +11,6 @@ ex.indexGet = function(req, res) {
 
 ex.loginGet = function(req, res) {
 	res.render('login', {title: 'Login'});
-};
-
-ex.registerGet = function(req, res) {
-	res.render('register', {title: 'Register'});
-};
-
-ex.registerPost = function (req, res, next) {
-	if (req.body.password != req.body.passwordc) return res.send("PASSWORDS DONT MATCH (DERP)");
-	core.user.register(req.body.username, req.body.password, "email@email.com", function(err, message) {
-		if (err) return res.send("SERVER SIDE ERROR DURING REGISTRATION PROCESS!");
-		if (message) return res.send(message);
-                res.send("ACCOUNT CREATED! WOOT!");
-         });
 };
 
 ex.heroListGet = function (req, res, next) {

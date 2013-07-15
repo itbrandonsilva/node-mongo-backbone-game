@@ -1,72 +1,96 @@
 "use strict";
 
-var db  	= require("../common/mongoConnection.js").client;
-var cfg 	= require("../common/config.js");
-var async 	= require("async");
+var cfg 		= require("../common/config.js");
+var async 		= require("async");
+
+var world       = require("./world.js");
+
+var models      = require("../common/models");
 
 var ex = {};
+module.exports = ex;
 
-ex.generateMap = function(mapid) {
+ex.generate = function(world) {
+    var world_id = world._id;
+    
 	var xSize = cfg.map.startingXsize; 
 	var ySize = cfg.map.startingYsize; 
 
 	var possibleTiles = cfg.map.possibleTiles;
 
-	var map = [];
+	var m = {};
+    m.tiles = {};
 
+    var map = m.tiles;
 	for (var x = 0; x < xSize; ++x) {
-		if (!map[x]) map[x] = [];
+		if (!map[x]) map[x] = {};
 		for (var y = 0; y < ySize; ++y) {
-			if (!map[x][y]) map[x][y] = [];
+			if (!map[x][y]) map[x][y] = {};
 			var tileIndex = Math.floor(Math.random()*(possibleTiles.length-1));			
+            
+            var t = new models.Map;
 
-			map[x][y] = {
-				map_id: mapid,
-				x: x,
-				y: y,
-				terrain_type: possibleTiles[tileIndex]
+		    t.world_id      = world_id,
+			t.grid_x        = x,
+			t.grid_y        = y,
+			t.properties    = {
+                terrain_type: possibleTiles[tileIndex]
 			}
+            map[x][y] = t;
 		}
 	}
 
-	return(map);	
+    m.world_id = world_id;
+	return(m);	
 };
 
-ex.loadMap = function(mapid, cb) {
+ex.load = function(world_id, cb) {
 	var map = {};
 
-	db.collection("map", function (err, collection) {
-		collection.find({map_id: mapid}).toArray(function (err, tiles) {
-			for (var i = 0, l = tiles.length; i < l; ++i) {
-				var t = tiles[i];
-				if (!map[t.x]) map[t.x] = {};
-				map[t.x][t.y] = t;
-			};
-			return cb(err, map);
-		});
-	});	
+	models.Map.find({world_id: world_id}).toArray(function (err, tiles) {
+		for (var i = 0, l = tiles.length; i < l; ++i) {
+			var t = tiles[i];
+			if (!map[t.x]) map[t.x] = {};
+			map[t.x][t.y] = t;
+		};
+
+        var m = {};
+        m.world_id = world_id;
+        m.tiles = map;
+		return cb(err, m);
+	});
 };
 
-ex.saveMap = function (map, mapid, cb) {
-	db.collection("map", function (err, collection) {
-		var packedMap = [];
-		for (var i in map) {
-			for (var j in map[i]) {
-				packedMap.push(map[i][j]);
-			}
-		}
+ex.getTile = function (world_id, x, y, cb) {
+    world.get(world_id, function (err, w) {
+        if (err) return cb(err);
+        models.Map.findOne({world_id: world_id, grid_x: x, grid_y: y}, function (err, t) {
+            if (err) return cb(err);
+            if (!t) return cb(new Error("Invalid tile."));
+            return cb(err, t);
+        });
+    });
+};
 
-		async.eachSeries(packedMap,
-			function (tile, cb) {
-				collection.update({map_id: mapid, x: tile.x, y: tile.y}, tile, {upsert: true}, function (err) {
-					return cb(err);
-				});
-			},
-			function (err) {
-				return cb(err);
-			}
-		);
-	});
+ex.saveTile = function (tile, cb) {
+    tile.save(function (err, t) {
+        if (err) return cb(err);
+		return cb(err, t);
+    });
+};
+
+ex.save = function (map, cb) {
+
+	async.eachSeries(Object.keys(map.tiles),
+        function (xKey, cb) {
+            async.eachSeries(Object.keys(map.tiles[xKey]),
+                function (yKey, cb) {
+                    map.tiles[xKey][yKey].save(cb);
+                }, cb
+            );
+        }, cb
+    );
+
 };
 
 ex.adjacentTiles = function(x, y, xLimit, yLimit) {
@@ -97,24 +121,23 @@ ex.adjacentTiles = function(x, y, xLimit, yLimit) {
 		}
 	}
 
-	return adjacentTiles;
+    var o = {};
+    for (var i = 0, l = adjacentTiles.length; i < l; ++i) {
+        var x = adjacentTiles[i][0];
+        var y = adjacentTiles[i][1];
+
+        if (!o[x])      o[x] = {};
+        if (!o[x][y])   o[x][y] = true; 
+    }
+
+	return o;
 };
 
-module.exports = ex;
-
 if (cfg.env == "DEV") {
-	var mapid = 0;
-	var map = ex.generateMap(mapid);
-	console.log(ex.adjacentTiles(1, 1, 20, 20));
-	console.log(ex.adjacentTiles(2, 2, 20, 20));
-	console.log("");
-
-	ex.saveMap(map, mapid, function (err) {
-		if (err) throw new Error(err);
-		console.log("Test map saved!");
-		ex.loadMap(mapid, function (err, map) {
-			if (err) throw new Error(err);
-			console.log("Test map loaded!");
-		});
-	});
+    /*
+    var x = 5;
+    var y = 5;
+    console.log("X: " + x + " Y: " + y);
+    console.log(JSON.stringify(ex.adjacentTiles(x, y, 10, 10), null, 2));
+    */
 }

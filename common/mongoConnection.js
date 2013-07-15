@@ -1,14 +1,32 @@
-var cfg = require("./config.js");
-var mongo = require("mongodb");
-var async = require("async");
+var cfg		= require("./config.js");
+var mongo	= require("mongodb");
+var async	= require("async");
 
-var client = new mongo.Db('main', new mongo.Server(cfg.mongo_host, cfg.mongo_port, {}), {w:1});
+var client 	= new mongo.Db(cfg.mongo.db, new mongo.Server(cfg.mongo.host, cfg.mongo.port, {}), {w:1});
 
-module.exports = {client: false};
+ex		= {};
+ex.client	= null;
+ex.collections	= {};
 
-client.open(function(err, c) {
-	if (err) throw new Error(err);
-	console.log("Open!");
-	module.exports.client = c;
-});
+ex.init = function (cb) {
+	client.open(function(err, c) {
+		if (err) throw new Error(err);
+		ex.client = c;
 
+		async.eachSeries(cfg.mongo.collections,
+			function (collectionName, cb) {
+				c.collection(collectionName, function (err, collection) {
+					if (err) return cb(err);
+					ex.collections[collectionName] = collection;
+					return cb(err);
+				});
+
+			},
+			function (err) {
+				return cb(err);
+			}
+		);
+	});
+};
+
+module.exports	= ex;

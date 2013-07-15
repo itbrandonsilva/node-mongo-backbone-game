@@ -1,0 +1,24 @@
+/*@import url('style.css');*/
+@import url('bootstrap.css'); 
+
+#content div {
+    margin: 20px 0px 0px 20px;
+}
+
+.basicLoginForm input, .basicRegistrationForm input {
+    width: 200px;
+    display: block;
+}
+
+.formError {
+    width: 200px;
+    display: block;
+    padding-bottom: 17px;
+    color: red;
+    text-align: center;
+}
+
+#gameMenuLeft {
+    position: fixed;
+    margin: 20px 0px 0px 20px;
+}

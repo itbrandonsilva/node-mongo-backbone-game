@@ -1,22 +1,20 @@
-var db    = require("../common/mongoConnection.js");
-var async = require("async");
+"use strict";
 
-var ex = {ready: false};
+var ex = {};
 module.exports = ex;
 
-console.log("Ready?: " + db.client);
+var modules = ["user", "map", "hero", "world", "map"];
 
-async.until(
-	function () {
-		return db.client;
-	},
-	function (cb) {
-		setTimeout(cb, 100)
-	},
-	function (err) {
-		ex.user = require("./user.js");
-		ex.map = require("./map.js");
-		ex.hero = require("./hero.js");
-		ex.ready = true;	
-	}
-);
+for (var i in modules) {
+    var m = modules[i];
+    ex[m] = require("./" + m + ".js");
+}        
+
+for (var i in modules) {
+    var m = modules[i];
+    if (ex[m].requireCore) ex[m].requireCore();
+}        
+
+if (require.main === module) {
+    console.log("Loaded.");
+}

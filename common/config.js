@@ -1,11 +1,24 @@
 "use strict";
 var ex = {};
 
-ex.mongo_host = "127.0.0.1";
-ex.mongo_port = 27017;
+ex.mongo = {
+	db: "main",
+	host: "127.0.0.1",
+	port: 27017,
+	collections: [
+		"user",
+		"hero",
+		"world",
+		"map"
+	]
+};
 
 ex.web = {
 	port: 3000
+};
+
+ex.api = {
+    port: 3001
 };
 
 // DEV, PRD

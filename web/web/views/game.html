@@ -1,0 +1,241 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <style>
+      body {
+        margin: 0px;
+        padding: 0px;
+      }
+    </style>
+
+    <script src="../libs/jquery/jquery-1.10.1.min.js" ></script>
+    <script src="../libs/jquery/ui/ui/minified/jquery-ui.min.js" ></script>
+    <link rel="stylesheet" href="../libs/jquery/ui/themes/base/jquery-ui.css" />
+    
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="../libs/three/three.min.js" ></script>
+    <script src="../libs/three/stats.min.js" ></script>
+
+    <title>Game</title>
+    <script data-main="game/main" src="libs/require/require.js"></script>
+
+    <script>
+
+        window.onload = function () {
+
+        $(function () {
+            $("#gameMenuLeft").menu();
+        });
+
+        var THREEGlobals = {
+            myWidth: window.innerWidth,
+            myHeight: window.innerHeight
+        };
+
+        var lineMaterial = new THREE.LineBasicMaterial({
+                color: 0x0000ff
+        });
+
+        var lineGeometry;
+        var line;
+
+
+        function HexagonGrid(sizeX, sizeY, material, scene) {
+
+            this.defaultMaterial = material || new THREE.MeshBasicMaterial( {color: 0x009900} );
+
+            this.geometry = (function () {
+                var geo = new THREE.Geometry();
+
+                var vs = geo.vertices;
+
+                vs.push(new THREE.Vector3(0, 0, 0));
+                vs.push(new THREE.Vector3(-1, 2, 0));
+                vs.push(new THREE.Vector3(1, 2, 0));
+                vs.push(new THREE.Vector3(2, 0, 0));
+                vs.push(new THREE.Vector3(1, -2, 0));
+                vs.push(new THREE.Vector3(-1, -2, 0));
+                vs.push(new THREE.Vector3(-2, 0, 0));
+
+
+                geo.faces.push( new THREE.Face3(0, 2, 1) );
+                geo.faces.push( new THREE.Face3(0, 3, 2) );
+                geo.faces.push( new THREE.Face3(0, 4, 3) );
+                geo.faces.push( new THREE.Face3(0, 5, 4) );
+                geo.faces.push( new THREE.Face3(0, 6, 5) );
+                geo.faces.push( new THREE.Face3(0, 1, 6) );
+
+                geo.computeFaceNormals();
+
+                return geo;
+            }());
+
+            this.buildDefaultMesh = function (x, y) {
+                var mesh = new THREE.Mesh(this.geometry, this.defaultMaterial);
+
+                var xPos = x*6;
+                var yPos = y*2;
+
+                // If y is NOT an even number.
+                if ( y%2 ) {
+                    xPos+=3;	
+                }
+
+                // Padding.
+                xPos+=(x*0.2);
+                yPos+=(y*0.2);
+
+                // Center grid.
+                xPos-=(sizeX*3);
+                yPos-=(sizeY*1);
+
+                mesh.position.set(xPos, yPos, 0);
+
+                scene.add(mesh);
+                return mesh;
+            };
+
+            this._buildGrid = function () {
+
+                g = {};
+                for (var x = 0; x < sizeX; ++x) {
+                    g[x] = {};
+                    for (var y = 0; y < sizeY; y++) {
+                        g[x][y] = {
+                            mesh: this.buildDefaultMesh(x, y)
+                        };
+                    }
+                }
+                return g;
+
+            };
+
+            this.grid = this._buildGrid();
+        }
+
+        var clickedMaterial = new THREE.MeshBasicMaterial( {color: 0x0000ff} );
+
+        function onDocumentMouseDown( event ) {
+            event.preventDefault();
+
+            var g = THREEGlobals;
+
+            var x = (event.clientX / g.myWidth) * 2 - 1;
+            var y = -( event.clientY / g.myHeight ) * 2 + 1;
+            var z = 0.5;
+            var vector = new THREE.Vector3( x, y, z );
+
+            var raycaster = g.projector.pickingRay( vector, g.camera );
+
+            /*
+            lineGeometry = new THREE.Geometry();
+            lineGeometry.vertices.push(raycaster.ray.origin);
+            lineGeometry.vertices.push(raycaster.ray.direction);
+            var line = new THREE.Line(lineGeometry, lineMaterial);
+            g.scene.add(line);
+            */
+
+            var intersects = raycaster.intersectObjects(g.scene.children, true);
+
+            for (var i = 0, l = intersects.length; i < l; ++i) {
+                intersects[i].object.material = clickedMaterial;
+            }
+        };
+
+        function main() {
+
+            var g = THREEGlobals;
+
+            // renderer
+            g.renderer = new THREE.WebGLRenderer ( { antialias: true } );
+            //g.renderer = new THREE.CanvasRenderer ( { antialias: true } );
+            g.renderer.setClearColor(0xff0000, 1);
+            g.renderer.setSize(g.myWidth, g.myHeight);
+
+         
+            // camera
+            g.camera = new THREE.PerspectiveCamera(45, g.myWidth/g.myHeight, 1, 1000);
+            g.camera.position.y = -33;
+            g.camera.position.z = 30;
+            g.camera.rotation.x = 45 * (Math.PI / 180);
+         
+            // scene
+            g.scene = new THREE.Scene();
+
+            document.addEventListener( 'mousedown', onDocumentMouseDown, false );
+
+            g.projector = new THREE.Projector();
+
+            g.hexGrid = new HexagonGrid(7, 14, null, g.scene);
+
+            g.renderer.domElement.style.position = 'fixed';
+            g.renderer.domElement.style['z-index'] = -1;
+            container.appendChild( g.renderer.domElement );
+
+            var stats = new Stats();
+            stats.domElement.style.float = 'right';
+            container.appendChild( stats.domElement );
+
+            // request new frame
+            function renderScene() {
+                requestAnimationFrame(function () {
+                    g.renderer.render(g.scene, g.camera);
+                    stats.update();
+                    renderScene();
+                });
+            }
+            renderScene();
+        }
+
+        main();
+
+        };
+
+    </script>
+
+  </head>
+  <body>
+
+    <div id="container">
+<ul id="gameMenuLeft">
+  <li class="ui-state-disabled"><a href="#">Aberdeen</a></li>
+  <li><a href="#">Logout</a></li>
+  <li><a href="#">Adamsville</a></li>
+  <li><a href="#">Addyston</a></li>
+  <li>
+    <a href="#">Delphi</a>
+    <ul>
+      <li class="ui-state-disabled"><a href="#">Ada</a></li>
+      <li><a href="#">Saarland</a></li>
+      <li><a href="#">Salzburg</a></li>
+    </ul>
+  </li>
+  <li><a href="#">Saarland</a></li>
+  <li>
+    <a href="#">Salzburg</a>
+    <ul>
+      <li>
+        <a href="#">Delphi</a>
+        <ul>
+          <li><a href="#">Ada</a></li>
+          <li><a href="#">Saarland</a></li>
+          <li><a href="#">Salzburg</a></li>
+        </ul>
+      </li>
+      <li>
+        <a href="#">Delphi</a>
+        <ul>
+          <li><a href="#">Ada</a></li>
+          <li><a href="#">Saarland</a></li>
+          <li><a href="#">Salzburg</a></li>
+        </ul>
+      </li>
+      <li><a href="#">Perch</a></li>
+    </ul>
+  </li>
+  <li class="ui-state-disabled"><a href="#">Amesville</a></li>
+</ul>
+    </div>
+
+  </body>
+</html>
