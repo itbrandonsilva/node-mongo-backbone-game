@@ -1,20 +1,17 @@
 {
 	"name": "game",
 	"version": "0.0.0",
-	"private": true,
-	"scripts": {
-		"start": "node ./web/app.js"
-	},
 	"dependencies": {
 		"async": "*",
 		"mongodb": "*",
 		"bcrypt": "*",
 
-		"express": "3.2.5",
+		"express": "*",
 		"express3-handlebars": "*",
 		"connect-flash": "*",
 		"connect-mongo": "*",
 		"passport": "*",
-		"passport-local": "*"
+		"passport-local": "*",
+        "mongoose": "*"
 	}
 }
