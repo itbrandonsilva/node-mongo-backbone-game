@@ -2,9 +2,8 @@
 
 define([
     'jquery',
-    'jquerycookie',
     'backbone'
-], function ($, ugh, Backbone) {
+], function ($, Backbone) {
     var Session = Backbone.Model.extend({
 
         login: function (username, password, cb) {
@@ -13,8 +12,6 @@ define([
                 username: username,
                 password: password
             }, function (data) {
-                //console.log($.cookie("connect.sid"));
-                //console.log( req.getAllResponseHeaders() );
                 return cb(null, data);
             })
             .fail(function () {

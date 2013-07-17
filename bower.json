@@ -1,0 +1,13 @@
+{
+    "dependencies": {
+        "requirejs": "https://github.com/jrburke/requirejs.git",
+        "jquery": "jquery",
+        "jqueryui": "https://github.com/jquery/jquery-ui.git",
+        "underscore": "git://github.com/documentcloud/underscore",
+        "backbone": "git://github.com/documentcloud/backbone",
+        "text": "git://github.com/requirejs/text",
+        "async": "git://github.com/caolan/async",
+        "threejs": "git://github.com/mrdoob/three.js",
+        "statsjs": "https://github.com/mrdoob/stats.js.git"
+    }
+}

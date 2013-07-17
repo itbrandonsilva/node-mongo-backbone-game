@@ -32,7 +32,6 @@ define([
         });
 
         router.on('route:homeAction', function (actions) {
-            console.log("Triggered default.");
             user.isLoggedIn(function (loggedIn) {
                 if (loggedIn) return user.directToGame();
                 views['ViewLogin'].render();

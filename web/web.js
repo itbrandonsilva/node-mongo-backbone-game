@@ -31,7 +31,7 @@ if ('development' == app.get('env')) {
 
 app.get('*', function (req, res) {
 
-    if (req.route.params == "/") return res.sendfile("./web/views/index.html");
+    if (req.route.params == "/" || req.route.params == "/index") return res.sendfile("./web/views/index.html");
     if (req.route.params == "/game") return res.sendfile("./web/views/game.html");
 
     var file;

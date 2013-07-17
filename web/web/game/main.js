@@ -1,27 +1,14 @@
 "use strict";
 
-require.config({
-    paths: {
-        jquery: '../libs/jquery/jquery-1.10.1.min',
-        jquerycookie: '../libs/jquery/jquery.cookie',
-        underscore: '../libs/underscore/underscore-min',
-        backbone: '../libs/backbone/backbone-min',
-        user: 'user',
-        html: 'views/html',
-        text: '../plugins/text'
-    },
+require(['../libs/config.js'], function (config) {
 
-    shim: {
-        backbone: {
-            deps: ['jquery', 'underscore'],
-            exports: 'Backbone'
-        }
-    }
-});
+    config({
+        "threejs": "{prefix}threejs/build/three.min",
+        "statsjs": "{prefix}statsjs/build/stats.min",
+        "html": "views/html"
+    }, "../libs/");
 
-require([
-    'app',
-    'user'
-], function (App, user) {
-    //App();
+    require(['app'], function (app) {
+        app();
+    });
 });

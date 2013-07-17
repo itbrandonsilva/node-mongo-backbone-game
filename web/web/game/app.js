@@ -1,7 +1,9 @@
 define([
     'jquery',
-    'router'
-], function ($, Router) {
+    'scene',
+    'HexGrid',
+    'input'
+], function ($, scene, HexGrid, input) {
 
     $(document).ajaxSend(function (e, xhr, settings) {
         if (!settings.xhrFields) settings.xhrFields = {};
@@ -12,8 +14,8 @@ define([
         console.log("Response: " + xhr.responseText);
     });
 
-
     return function () {
-        Router.initialize();
+        var hexGrid = new HexGrid(7, 14, scene.scene);
     };
+    
 });
