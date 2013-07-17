@@ -3,8 +3,8 @@
 require(['../libs/config.js'], function (config) {
 
     config({
-        "threejs": "{prefix}threejs/build/three.min",
-        "statsjs": "{prefix}statsjs/build/stats.min",
+        "threejs": "{libpath}threejs/build/three.min",
+        "statsjs": "{libpath}statsjs/build/stats.min",
         "html": "views/html"
     }, "../libs/");
 

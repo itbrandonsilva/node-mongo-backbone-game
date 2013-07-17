@@ -23,7 +23,7 @@ function prefixPaths(prefix, all) {
     Object.keys(paths).forEach(function (p) {
 
         if (all) paths[p] = prefix + paths[p];
-        else paths[p] = paths[p].replace("{prefix}", prefix);
+        else paths[p] = paths[p].replace("{libpath}", prefix);
 
     });
 };
@@ -36,11 +36,11 @@ function addPaths(paths) {
 };
 
 define([], function () {
-    return function (paths, prefix) {
+    return function (paths, libpath) {
 
-        prefixPaths(prefix, true);
+        prefixPaths(libpath, true);
         addPaths(paths);
-        prefixPaths(prefix);
+        prefixPaths(libpath);
 
         console.log(JSON.stringify(config, null, 2));
 
